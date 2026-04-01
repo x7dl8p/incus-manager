@@ -1,12 +1,5 @@
 #!/bin/bash
 
-if [ ! -t 0 ]; then
-    exec < /dev/tty || {
-        echo "Error: Cannot read from terminal. Are you running this interactively?"
-        exit 1
-    }
-fi
-
 # Ensure Incus is installed
 if ! command -v incus &> /dev/null; then
     echo "Incus is not installed."

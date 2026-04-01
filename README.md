@@ -3,9 +3,9 @@
 An interactive CLI tool to manage your Incus containers and set them up for VS Code Remote-SSH access instantly.
 
 ## Quick Setup (Curl)
-You can directly run the CLI using this one-liner curl command:
+You can directly run the CLI using this one-liner curl command (this method correctly preserves interactive keyboard input):
 ```bash
-curl -fsSL https://raw.githubusercontent.com/x7dl8p/incus-manager/refs/heads/main/incus-manager.sh | bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/x7dl8p/incus-manager/refs/heads/main/incus-manager.sh)"
 ```
 
 ### Options:
