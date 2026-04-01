@@ -1,9 +1,16 @@
 #!/bin/bash
 
+if [ ! -t 0 ]; then
+    exec < /dev/tty || {
+        echo "Error: Cannot read from terminal. Are you running this interactively?"
+        exit 1
+    }
+fi
+
 # Ensure Incus is installed
 if ! command -v incus &> /dev/null; then
     echo "Incus is not installed."
-    read -p "Would you like to install it now? (y/N): " install_incus < /dev/tty
+    read -p "Would you like to install it now? (y/N): " install_incus
     if [[ "$install_incus" =~ ^[Yy]$ ]]; then
         echo "Installing Incus..."
         # Using the standard Debian/Ubuntu package for Incus
@@ -16,7 +23,7 @@ if ! command -v incus &> /dev/null; then
 
         # Suggesting initialization if the user hasn't run it
         echo "You may need to run 'sudo incus admin init' to configure it for the first time."
-        read -p "Press Enter to continue..." < /dev/tty
+        read -p "Press Enter to continue..."
     else
         echo "Incus is required to run this manager. Exiting..."
         exit 1
@@ -43,7 +50,7 @@ function select_container() {
     done
     echo "c) Cancel"
 
-    read -p "Select a container: " selection < /dev/tty
+    read -p "Select a container: " selection
 
     if [[ "$selection" == "c" || "$selection" == "C" ]]; then
         return 1
@@ -139,7 +146,7 @@ function setup_container() {
     echo "=========================================================="
     echo "Setup Complete! You can now connect in VS Code Remote-SSH to: $container_name"
     echo "=========================================================="
-    read -p "Press Enter to continue..." < /dev/tty
+    read -p "Press Enter to continue..."
 }
 
 function delete_container() {
@@ -150,7 +157,7 @@ function delete_container() {
     local container_name="$SELECTED_CONTAINER"
 
     # 1. Ask if user wants to delete the actual container
-    read -p "Do you want to permanently delete the Incus container '$container_name'? (y/N): " confirm_delete < /dev/tty
+    read -p "Do you want to permanently delete the Incus container '$container_name'? (y/N): " confirm_delete
 
     # 2. Remove SSH Configuration
     remove_ssh_config "$container_name"
@@ -167,7 +174,7 @@ function delete_container() {
         echo "Container deletion skipped."
     fi
     echo "=========================================================="
-    read -p "Press Enter to continue..." < /dev/tty
+    read -p "Press Enter to continue..."
 }
 
 function show_menu() {
@@ -179,7 +186,7 @@ function show_menu() {
     echo "2) Delete a container (and SSH config)"
     echo "3) Exit"
     echo "========================================"
-    read -p "Choose an option (1/2/3): " choice < /dev/tty
+    read -p "Choose an option (1/2/3): " choice
     return $choice
 }
 
