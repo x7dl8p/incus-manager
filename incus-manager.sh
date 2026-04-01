@@ -1,5 +1,28 @@
 #!/bin/bash
 
+# Ensure Incus is installed
+if ! command -v incus &> /dev/null; then
+    echo "Incus is not installed."
+    read -p "Would you like to install it now? (y/N): " install_incus
+    if [[ "$install_incus" =~ ^[Yy]$ ]]; then
+        echo "Installing Incus..."
+        # Using the standard Debian/Ubuntu package for Incus
+        sudo apt-get update
+        sudo apt-get install -y incus || {
+            echo "Failed to install Incus automatically. Please install it manually."
+            exit 1
+        }
+        echo "Incus has been installed successfully!"
+
+        # Suggesting initialization if the user hasn't run it
+        echo "You may need to run 'sudo incus admin init' to configure it for the first time."
+        read -p "Press Enter to continue..."
+    else
+        echo "Incus is required to run this manager. Exiting..."
+        exit 1
+    fi
+fi
+
 # Fetch all available Incus container names
 get_containers() {
     incus list --format csv -c n
