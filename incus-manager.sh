@@ -52,11 +52,34 @@ function select_container() {
     # Check if input is a valid number within array bounds
     if [[ "$selection" =~ ^[0-9]+$ ]] && [ "$selection" -ge 1 ] && [ "$selection" -le ${#containers[@]} ]; then
         SELECTED_CONTAINER="${containers[$((selection-1))]}"
+        echo "Selected container: $SELECTED_CONTAINER"
         return 0
-    else
-        echo "Invalid selection."
-        return 1
     fi
+
+    # Check case-insensitive exact match
+    local lower_sel=$(echo "$selection" | tr '[:upper:]' '[:lower:]')
+    for c in "${containers[@]}"; do
+        local lower_c=$(echo "$c" | tr '[:upper:]' '[:lower:]')
+        if [[ "$lower_sel" == "$lower_c" ]]; then
+            SELECTED_CONTAINER="$c"
+            echo "Selected container: $SELECTED_CONTAINER"
+            return 0
+        fi
+    done
+
+    # Check normalized match (ignore spaces, hyphens, underscores)
+    local norm_sel=$(echo "$selection" | tr -d '[:space:]_-' | tr '[:upper:]' '[:lower:]')
+    for c in "${containers[@]}"; do
+        local norm_c=$(echo "$c" | tr -d '[:space:]_-' | tr '[:upper:]' '[:lower:]')
+        if [[ "$norm_sel" == "$norm_c" ]]; then
+            SELECTED_CONTAINER="$c"
+            echo "Selected container: $SELECTED_CONTAINER"
+            return 0
+        fi
+    done
+
+    echo "Invalid selection."
+    return 1
 }
 
 function remove_ssh_config() {
@@ -66,8 +89,13 @@ function remove_ssh_config() {
         awk -v target="$target" '
             /^Host / {
                 if ($2 == target) { skip=1 } else { skip=0 }
+                if (skip) { next }
             }
-            !skip { print $0 }
+            skip {
+                if ($0 ~ /^[ \t]/ || $0 ~ /^$/) { next }
+                else { skip=0 }
+            }
+            { print $0 }
         ' ~/.ssh/config > ~/.ssh/config.tmp
         mv ~/.ssh/config.tmp ~/.ssh/config
         echo "SSH config removed successfully."
